@@ -1,6 +1,9 @@
 
 #define ALLEGRO_STATICLINK
 
+/* The data directory will be here... */
+#define DATADIR_SIZE 1024
+extern char data_directory[DATADIR_SIZE];
 
 #define NO_KEYS CKEY_END
 #define X_MIN 17120

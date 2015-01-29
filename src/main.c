@@ -11,6 +11,7 @@ I keep forgetting this and doing it by accident.
 #include "allegro.h"
 
 #include <string.h>
+#include <stdio.h>
 #include <math.h>
 
 #include "globvars.h"
@@ -69,7 +70,7 @@ void tickover(void)
 }
 END_OF_FUNCTION (tickover);
 
-
+char data_directory[DATADIR_SIZE] = "\0";
 
 int main(void)
 {
@@ -88,6 +89,14 @@ int allint =  allegro_init();
 
    three_finger_flag = 0;
    key_led_flag = 0;
+
+#ifdef DATADIR
+	strncpy(data_directory, DATADIR, sizeof(data_directory));
+	strcat(data_directory, "/");
+#else
+	get_executable_name(data_directory, sizeof(data_directory));
+	replace_filename(data_directory, data_directory, "", sizeof(data_directory));
+#endif //DATADIR
 
  init_at_startup();
 
@@ -148,7 +157,7 @@ I haven't tested it).
 
 	 char ConfigPath[2048];
 
-	 sprintf(ConfigPath, "%s/.Whitebutterfly", HPath);
+	 sprintf(ConfigPath, "%s/.whitebutterfly", HPath);
 	 set_config_file(ConfigPath);
 
    }

@@ -2372,10 +2372,7 @@ void change_music(int mto)
 }
 
 
-
-
-
-
+char filename_buffer [DATADIR_SIZE];
 
 /*
 Loads a .wav file. Should be in the .wavs subdirectory
@@ -2383,21 +2380,20 @@ Loads a .wav file. Should be in the .wavs subdirectory
 void load_sample_in(int samp, const char *sfile, int direct)
 {
 
- char sfile_name [50];
-
+ strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
  if (direct == DIRECT_WAV)
-  strcpy(sfile_name, ".//wavs//");
+  strncat(filename_buffer, "wavs/", sizeof(char) * DATADIR_SIZE);
    else
-    strcpy(sfile_name, ".//beat//");
- strcat(sfile_name, sfile);
- strcat(sfile_name, ".wav");
+    strncat(filename_buffer, "beat/", sizeof(char) * DATADIR_SIZE);
+ strncat(filename_buffer, sfile, sizeof(char) * DATADIR_SIZE);
+ strncat(filename_buffer, ".wav", sizeof(char) * DATADIR_SIZE);
 
- sounds [samp] = load_sample(sfile_name);
+ sounds [samp] = load_sample(filename_buffer);
 
  if (sounds [samp] == NULL)
  {
       set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-      allegro_message("Error: Unable to load sound file: %s", sfile_name);
+      allegro_message("Error: Unable to load sound file: %s", filename_buffer);
       exit(1);
  }
 }

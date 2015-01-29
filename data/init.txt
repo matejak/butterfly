@@ -1,0 +1,105 @@
+
+# White Butterfly init file - edit with a text editor to change settings
+
+[Misc]
+
+
+# Graphics and sound setup
+
+
+# Set Windowed to 1 for windowed mode, or 0 to play fullscreen
+# Windowed seems to suffer more from interference with other processes and is slower,
+# especially if vsync (see below) is on. It can also cause glitches in the music.
+# Fullscreen is recommended!
+Windowed = 1
+
+# Stereo mode
+# 0 is normal stereo
+# 1 doesn't pan the sounds according to location, although some of them are still played in stereo
+# 2 is reverse stereo
+StereoMode = 0
+
+sfx_volume = 70
+ambience_volume = 100
+
+# Turning vsync on eliminates a graphic shearing effect which some people might find annoying, 
+# but can slow things down, especially in windowed mode. The Allegro documentation
+# warns that palette shifting without it can cause snow, but I've never seen that. If you have, set it to 1.
+# Set to : 
+# 0 (off) 
+# 1 (only activates during palette shifting)
+# 2 (always on)
+vsync = 0
+
+
+# Control settings
+
+
+# if set to zero, the game won't even try to detect a joystick
+joy_init = 1
+
+# Which stick to use (for multi-stick gamepads). Set to zero for the main stick, according to Allegro.
+# I haven't tested this on anything but zero.
+joy_stick = 0
+
+# buttons mapped to fire 1, fire 2 and slow
+joy_button_1 = 0
+joy_button_2 = 1
+joy_button_slow = 2
+
+# How sensitive the joystick is to movement. 70 is a good number; too low and the player 
+# moves too slowly, too high and you lose analogue control.
+# You can't go faster than with keyboard controls, anyway. 
+joy_sensitivity = 70
+
+# Keyboard setup.
+# These are special Allegro codes so you can't really edit them. 
+key_up = 84
+key_left = 82
+key_right = 83
+key_down = 85
+key_fire1 = 26
+key_fire2 = 24
+key_fire3 = 3
+key_slow = 115
+
+
+# High scores
+
+
+# You could change these, but that would be lame.
+# I've renamed the difficulty levels since this was done.
+[Scores]
+Normal = 1000
+Easy = 1000
+Hard = 1000
+
+[Stage_normal]
+power0_0 = 0
+power1_0 = 0
+power2_0 = 0
+power3_0 = 0
+power4_0 = 0
+power0_1 = 0
+power1_1 = 0
+power2_1 = 0
+power3_1 = 0
+power4_1 = 0
+power_bar0_0 = 0
+power_bar1_0 = 0
+power_bar2_0 = 0
+power_bar3_0 = 0
+power_bar4_0 = 0
+power_bar0_1 = 0
+power_bar1_1 = 0
+power_bar2_1 = 0
+power_bar3_1 = 0
+power_bar4_1 = 0
+unlock = 0
+finished1 = 0
+finished0 = 0
+clear0 = 0
+
+[Stage_punishment]
+unlock = 0
+finished3 = 0

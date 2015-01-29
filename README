@@ -1,15 +1,15 @@
-
-**********************************************
-
 White Butterfly
-Version 1.1
-by Linley Henzell
+===============
+
+Based on version 1.1 (2010) by Linley Henzell (2010), 
+maintained by Matěj Týč (2015)
 
 Released under the GPL v3. Source code is available from www.sourceforge.net, project name "white butterfly", and should work on any platform supported by Allegro.
 
-**********************************************
+Message from the author
+-----------------------
 
-Well, this is my latest shoot-em-up. Choose a fighter and wreak destruction through three pastel-shaded stages.
+This is my latest shoot-em-up. Choose a fighter and wreak destruction through three pastel-shaded stages.
 
 Each fighter moves at the same speed and is only vulnerable in the cockpit (the small lozenge-shaped white section in the centre). Each has three weapons, which gain power as you use them to destroy things (see the bars on the top left of the screen). When all three have reached a new level, they all power up at once - this means that you will need to balance your use of them. If your White Butterfly has its seekers at level 4 and its cannons at level 1, they'll all function at level 1. Seek harmony!
 
@@ -25,18 +25,16 @@ Thanks to:
 - Mel, who is very patient.
 
 If you like White Butterfly, you might also like some of my other games (easy to find on the web):
-Garden of Coloured Lights
-Excellent Bifurcation
-Overgod
-Lacewing
-Captain Pork's World of Violence (not so good)
-Captain Pork's Revenge (not great either)
-Crawl (now with a new life as Crawl Stone Soup)
 
+- Garden of Coloured Lights
+- Excellent Bifurcation
+- Overgod
+- Lacewing
+- Captain Pork's World of Violence (not so good)
+- Captain Pork's Revenge (not great either)
+- Crawl (now with a new life as Crawl Stone Soup)
 
-Any comments/queries/complaints to l_henzell@yahoo.com.au.
-
+Any comments/queries/complaints to `l_henzell@yahoo.com.au`.
 
 Bye!
 Linley
-

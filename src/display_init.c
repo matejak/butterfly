@@ -96,9 +96,7 @@ RLE_SPRITE *new_rle_sprite(BITMAP *source, const char errtxt []);
 
 extern int beam_colours [4] [5];
 
-
-
-
+char filename_buffer [DATADIR_SIZE];
 
 
 /*
@@ -120,7 +118,9 @@ void prepare_display(void)
 
  clear_to_color(screen, COL_OUTLINE);
 
- DATAFILE *datf = load_datafile("gfx//garden.dat");
+ 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
+	strncat(filename_buffer, "gfx/garden.dat", sizeof(char) * DATADIR_SIZE);
+	DATAFILE *datf = load_datafile(filename_buffer);
  if (datf == NULL)
  {
   set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
@@ -194,6 +194,8 @@ end splash
 
  int i, j;
 
+ 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
+	strncat(filename_buffer, "gfx/garden.dat", sizeof(char) * DATADIR_SIZE);
  BITMAP *font_bitmap = load_up_bitmap("g_font4.bmp");
 
  int back_col = getpixel(font_bitmap, 0, 0);
@@ -249,7 +251,9 @@ end splash
 
  display = new_bitmap(600, 600, "Display");
 
- BITMAP *temp_white_bitmap = load_up_bitmap("gfx//white.bmp");
+ 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
+	strncat(filename_buffer, "gfx/white.bmp", sizeof(char) * DATADIR_SIZE);
+ BITMAP *temp_white_bitmap = load_up_bitmap(filename_buffer);
  fix_outline(temp_white_bitmap);
 
  white_RLE = extract_rle_sprite(temp_white_bitmap, 1, 1, 280, 53);
@@ -666,7 +670,6 @@ void prepare_circles(void)
   destroy_bitmap(temp_bitmap);
  }
 
-  destroy_bitmap(temp_bitmap);
   // temp_bitmap is not created each time through loop for icircles.
 
 }
@@ -677,7 +680,9 @@ void prepare_player_rles(void)
 {
 
 
- BITMAP *file_bitmap = load_up_bitmap("gfx//player.bmp");
+ 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
+	strncat(filename_buffer, "gfx/player.bmp", sizeof(char) * DATADIR_SIZE);
+ BITMAP *file_bitmap = load_up_bitmap(filename_buffer);
 
  fix_outline(file_bitmap);
 
@@ -728,7 +733,9 @@ void prepare_s_enemy_rles(void)
 {
 
 
- BITMAP *file_bitmap = load_up_bitmap("gfx//small.bmp");
+ 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
+	strncat(filename_buffer, "gfx/small.bmp", sizeof(char) * DATADIR_SIZE);
+ BITMAP *file_bitmap = load_up_bitmap(filename_buffer);
 
  fix_outline(file_bitmap);
 
@@ -807,7 +814,9 @@ void prepare_l_enemy_rles(void)
 
  RGB temp_palette [256];
 
- BITMAP *temp_bitmap = load_bitmap("gfx//large.bmp", temp_palette);
+ 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
+	strncat(filename_buffer, "gfx/large.bmp", sizeof(char) * DATADIR_SIZE);
+ BITMAP *temp_bitmap = load_bitmap(filename_buffer, temp_palette);
 
 // set_palette(temp_palette);
 
@@ -819,7 +828,9 @@ void prepare_l_enemy_rles(void)
 
 #endif
 
- BITMAP *file_bitmap = load_up_bitmap("gfx//large.bmp");
+ 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
+	strncat(filename_buffer, "gfx/small.bmp", sizeof(char) * DATADIR_SIZE);
+ BITMAP *file_bitmap = load_up_bitmap(filename_buffer);
 
  fix_outline(file_bitmap);
 
@@ -847,7 +858,9 @@ void prepare_l_enemy_rles(void)
 
 
 
- file_bitmap = load_up_bitmap("gfx//large2.bmp");
+ 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
+	strncat(filename_buffer, "gfx/large2.bmp", sizeof(char) * DATADIR_SIZE);
+ file_bitmap = load_up_bitmap(filename_buffer);
 
  fix_outline(file_bitmap);
 
@@ -879,7 +892,9 @@ void prepare_trans_rles(void)
 {
 
 
- BITMAP *file_bitmap = load_up_bitmap("gfx//trans.bmp");
+ 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
+	strncat(filename_buffer, "gfx/trans.bmp", sizeof(char) * DATADIR_SIZE);
+ BITMAP *file_bitmap = load_up_bitmap(filename_buffer);
 
  fix_trans(file_bitmap);
 /*

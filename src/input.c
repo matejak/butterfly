@@ -4,6 +4,7 @@
 #include "allegro.h"
 
 #include <math.h>
+#include <stdio.h>
 
 #include "globvars.h"
 #include "pbullet.h"
@@ -85,9 +86,7 @@ static int sshot_counter = 0;
    scrshot_bmp = create_bitmap(600, 600);
    blit(screen, scrshot_bmp, 100,0,0,0,600,600);
 
-  strcpy(sfile, "sshot");
-  strcat(sfile, itoa(scrs, istr, 10));
-  strcat(sfile, ".bmp");
+  snprintf(sfile, sizeof(char) * sizeof(sfile), "sshot-%02d.bmp", scrs);
   save_bitmap(sfile, scrshot_bmp, palet);
   rectfill(screen, 100, 0, 700, 0, COL_WHITE);
 //  clear_to_color(screen, COL_WHITE);
@@ -2208,10 +2207,6 @@ void mflash(int b, int w, int m)
 
 }
 
-
-
-
-
 /*
 
 ****************************************************
@@ -2273,17 +2268,3 @@ void jstick_calibrate(void)
  return;
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
