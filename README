@@ -1,7 +1,7 @@
 White Butterfly
 ===============
 
-Based on version 1.1 (2010) by Linley Henzell (2010), 
+Based on version 1.1 (2010) by Linley Henzell (2010),
 maintained by Matěj Týč (2015)
 
 Released under the GPL v3. Source code is available from www.sourceforge.net, project name "white butterfly", and should work on any platform supported by Allegro.
@@ -38,3 +38,8 @@ Any comments/queries/complaints to `l_henzell@yahoo.com.au`.
 
 Bye!
 Linley
+
+Message from the maintainer
+---------------------------
+
+The game has three stages. However, every stage has three parts with boss at the end of each one of them.

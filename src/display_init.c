@@ -98,6 +98,20 @@ extern int beam_colours [4] [5];
 
 char filename_buffer [DATADIR_SIZE];
 
+const char * set_fname(const char * basename)
+{
+	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
+	strncat(filename_buffer, basename, sizeof(char) * DATADIR_SIZE);
+}
+
+
+BITMAP * bmp_from_data(const char * basename)
+{
+	set_fname(basename);
+	BITMAP * ret = load_up_bitmap(filename_buffer);
+	return ret;
+}
+
 
 /*
 
@@ -118,19 +132,23 @@ void prepare_display(void)
 
  clear_to_color(screen, COL_OUTLINE);
 
- 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
-	strncat(filename_buffer, "gfx/garden.dat", sizeof(char) * DATADIR_SIZE);
-	DATAFILE *datf = load_datafile(filename_buffer);
- if (datf == NULL)
+	set_fname("gfx/garden.dat");
+
+	const char * names [] = {"g_font", NULL};
+	font = load_dat_font(filename_buffer, NULL, names);
+
+ if (font == NULL)
  {
   set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-  allegro_message("Error: Couldn't find data.dat! \n");
+  allegro_message("Error: Couldn't load font from datafile!\n");
   allegro_message("\n\r");
   exit(1);
  }
 // int i, j;
 
- font = (FONT *)datf[0].dat;
+ // TODO: Destroy datf
+ // Valgrind doesn't like this
+ //unload_datafile(datf);
 
 /*
 
@@ -190,51 +208,6 @@ end splash
 
 //#define FIX_FONT
 
-#ifdef FIX_FONT
-
- int i, j;
-
- 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
-	strncat(filename_buffer, "gfx/garden.dat", sizeof(char) * DATADIR_SIZE);
- BITMAP *font_bitmap = load_up_bitmap("g_font4.bmp");
-
- int back_col = getpixel(font_bitmap, 0, 0);
- int back_col2 = getpixel(font_bitmap, 1, 0);
- int out_col = getpixel(font_bitmap, 17, 4);
- int white_col = getpixel(font_bitmap, 18, 4);
-// int lgrey_col = getpixel(font_bitmap, 8, 19);
-
- for (i = 0; i < font_bitmap->w; i ++)
- {
-  for (j = 0; j < font_bitmap->h; j ++)
-  {
-   if (getpixel(font_bitmap, i, j) == back_col
-       || getpixel(font_bitmap, i, j) == back_col2)
-   {
-       putpixel(font_bitmap, i, j, 255);
-       continue;
-   }
-   if (getpixel(font_bitmap, i, j) == out_col)
-   {
-       putpixel(font_bitmap, i, j, COL_OUTLINE);
-       continue;
-   }
-   if (getpixel(font_bitmap, i, j) == white_col)
-   {
-       putpixel(font_bitmap, i, j, COL_WHITE);
-       continue;
-   }
-/*   if (getpixel(font_bitmap, i, j) == lgrey_col)
-   {
-       putpixel(font_bitmap, i, j, COL_LGREY);
-       continue;*/
-   }
-  }
-
-
- save_bitmap("g_font3.bmp", font_bitmap, palet);
-
-#endif
 
       drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
 
@@ -251,9 +224,8 @@ end splash
 
  display = new_bitmap(600, 600, "Display");
 
- 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
-	strncat(filename_buffer, "gfx/white.bmp", sizeof(char) * DATADIR_SIZE);
- BITMAP *temp_white_bitmap = load_up_bitmap(filename_buffer);
+	BITMAP * temp_white_bitmap = bmp_from_data("gfx/white.bmp");
+
  fix_outline(temp_white_bitmap);
 
  white_RLE = extract_rle_sprite(temp_white_bitmap, 1, 1, 280, 53);
@@ -267,410 +239,405 @@ end splash
 void prepare_circles(void)
 {
 
-// int cx, cy, ci, cs, ca, cd, cj, cn;
+	// int cx, cy, ci, cs, ca, cd, cj, cn;
 
- int i, j;
+	int i, j;
 
- BITMAP *temp_bitmap;
+	BITMAP * temp_bitmap;
 
- for (i = 0; i < RLE_BCIRCLES; i ++)
- {
-  temp_bitmap = new_bitmap((i + 1) * 2, (i + 1) * 2, "prepare bcircles");
-  clear_bitmap(temp_bitmap);
-  for (j = 0; j < 3; j ++)
-  {
-   circlefill(temp_bitmap, i + 1, i + 1, i, COL_BCIRCLE_1 + j);
-   circle(temp_bitmap, i + 1, i + 1, i, COL_BCIRCLE_OUT_1 + j);
-   RLE_bcircle [j] [i] = get_rle_sprite(temp_bitmap);
-  }
-  destroy_bitmap(temp_bitmap);
- }
+	for (i = 0; i < RLE_BCIRCLES; i ++)
+	{
+		temp_bitmap = new_bitmap((i + 1) * 2, (i + 1) * 2, "prepare bcircles");
+		clear_bitmap(temp_bitmap);
+		for (j = 0; j < 3; j ++)
+		{
+			circlefill(temp_bitmap, i + 1, i + 1, i, COL_BCIRCLE_1 + j);
+			circle(temp_bitmap, i + 1, i + 1, i, COL_BCIRCLE_OUT_1 + j);
+			RLE_bcircle [j] [i] = get_rle_sprite(temp_bitmap);
+		}
+		destroy_bitmap(temp_bitmap);
+	}
 
- int rad;
+	int rad;
 
- for (i = 0; i < RLE_CCIRCLES; i ++)
- {
-  temp_bitmap = new_bitmap((i + 1) * 2, (i + 1) * 2, "prepare ccircles");
-  clear_bitmap(temp_bitmap);
-  for (j = 0; j < 4; j ++)
-  {
+	for (i = 0; i < RLE_CCIRCLES; i ++)
+	{
+		temp_bitmap = new_bitmap((i + 1) * 2, (i + 1) * 2, "prepare ccircles");
+		clear_bitmap(temp_bitmap);
+		for (j = 0; j < 4; j ++)
+		{
+			rad = i;
+			circlefill(temp_bitmap, i + 1, i + 1, rad, beam_colours [j] [0]);
+			rad *= 0.90;
+			if (rad > 0)
+				circlefill(temp_bitmap, i + 1, i + 1, rad, beam_colours [j] [1]);
+			rad *= 0.90;
+			if (rad > 0)
+				circlefill(temp_bitmap, i + 1, i + 1, rad, beam_colours [j] [2]);
 
+			RLE_ccircle_3cols [j] [i] = get_rle_sprite(temp_bitmap);
 
+			rad *= 0.90;
+			if (rad > 0)
+				circlefill(temp_bitmap, i + 1, i + 1, rad, beam_colours [j] [3]);
 
-   rad = i;
-   circlefill(temp_bitmap, i + 1, i + 1, rad, beam_colours [j] [0]);
-   rad *= 0.90;
-   if (rad > 0)
-    circlefill(temp_bitmap, i + 1, i + 1, rad, beam_colours [j] [1]);
-   rad *= 0.90;
-   if (rad > 0)
-    circlefill(temp_bitmap, i + 1, i + 1, rad, beam_colours [j] [2]);
+			/*
+			for (ci = 0; ci < 3 + i; ci ++)
+			{
+			ca = grand(ANGLE_1);
+			cd = i - grand(3) - grand(3);
 
-   RLE_ccircle_3cols [j] [i] = get_rle_sprite(temp_bitmap);
+			cx = i + 1 + xpart(ca, cd);
+			cy = i + 1 + ypart(ca, cd);
+			cs = 1 + grand(3) + grand(i / 10);
+			if (cs > i/2)
+			cs = i/2;
+			cn = cs;
+			if (cn > 5)
+			cn = 5;
+			for (cj = 0; cj < cn; cj ++)
+			{
+			circlefill(temp_bitmap, cx, cy, cj, beam_colours [j] [5 - cj]);
+			}
+			}
 
-   rad *= 0.90;
-   if (rad > 0)
-    circlefill(temp_bitmap, i + 1, i + 1, rad, beam_colours [j] [3]);
+			*/
+			RLE_ccircle_4cols [j] [i] = get_rle_sprite(temp_bitmap);
 
-/*
-   for (ci = 0; ci < 3 + i; ci ++)
-   {
-    ca = grand(ANGLE_1);
-    cd = i - grand(3) - grand(3);
+			rad *= 0.90;
+			if (rad > 0)
+				circlefill(temp_bitmap, i + 1, i + 1, rad, beam_colours [j] [4]);
 
-    cx = i + 1 + xpart(ca, cd);
-    cy = i + 1 + ypart(ca, cd);
-    cs = 1 + grand(3) + grand(i / 10);
-    if (cs > i/2)
-     cs = i/2;
-    cn = cs;
-    if (cn > 5)
-     cn = 5;
-    for (cj = 0; cj < cn; cj ++)
-    {
-     circlefill(temp_bitmap, cx, cy, cj, beam_colours [j] [5 - cj]);
-    }
-   }
-
-*/
-   RLE_ccircle_4cols [j] [i] = get_rle_sprite(temp_bitmap);
-
-   rad *= 0.90;
-   if (rad > 0)
-    circlefill(temp_bitmap, i + 1, i + 1, rad, beam_colours [j] [4]);
-
-   RLE_ccircle_basic [j] [i] = get_rle_sprite(temp_bitmap);
-  }
-
-  destroy_bitmap(temp_bitmap);
- }
+			RLE_ccircle_basic [j] [i] = get_rle_sprite(temp_bitmap);
+		}
+		destroy_bitmap(temp_bitmap);
+	}
 
 
- int rad2;
+	int rad2;
 
- for (i = 0; i < 30; i ++)
- {
-  rad = i + 15; // see below
-  temp_bitmap = new_bitmap((rad + 1) * 2, (rad + 1) * 2, "prepare small_shock");
-  clear_bitmap(temp_bitmap);
-  for (j = 0; j < 4; j ++)
-  {
-   rad = i + 15; // see above
-   rad2 = rad;
+	for (i = 0; i < 30; i ++)
+	{
+		rad = i + 15; // see below
+		temp_bitmap = new_bitmap((rad + 1) * 2, (rad + 1) * 2, "prepare small_shock");
+		clear_bitmap(temp_bitmap);
+		for (j = 0; j < 4; j ++)
+		{
+			rad = i + 15; // see above
+			rad2 = rad;
 
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [0]);
-   if (i < 22)
-   {
-    rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [2]);
-   }
-   if (i < 22 && 0)
-   {
-    rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [4]);
-   }
-   if (i < 22)
-   {
-    rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [3]);
-   }
-   if (i < 24)
-   {
-    rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [2]);
-   }
-   if (i < 26)
-   {
-    rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [1]);
-   }
-   if (i < 28)
-   {
-    rad2 -= 2;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [0]);
-   }
+			circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [0]);
+			if (i < 22)
+			{
+				rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [2]);
+			}
+			if (i < 22 && 0)
+			{
+				rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [4]);
+			}
+			if (i < 22)
+			{
+				rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [3]);
+			}
+			if (i < 24)
+			{
+				rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [2]);
+			}
+			if (i < 26)
+			{
+				rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [1]);
+			}
+			if (i < 28)
+			{
+				rad2 -= 2;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [0]);
+			}
 
-   rad2 -= 2;
+			rad2 -= 2;
 
-   if (rad2 > -1)
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad2, 0);
+			if (rad2 > -1)
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, 0);
 
-   RLE_small_shock [j] [i] = get_rle_sprite(temp_bitmap);
-  }
-
-  destroy_bitmap(temp_bitmap);
- }
-
-
- for (i = 0; i < 50; i ++)
- {
-  rad = i + 25; // see below
-  temp_bitmap = new_bitmap((rad + 1) * 2, (rad + 1) * 2, "prepare large_shock");
-  clear_bitmap(temp_bitmap);
-  for (j = 0; j < 4; j ++)
-  {
-   rad = i + 25; // see above
-   rad2 = rad;
-
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [0]);
-   if (i < 42)
-   {
-    rad2 --;
-    if (i < 32)
-     rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [2]);
-   }
-   if (i < 42 && 0)
-   {
-    rad2 --;
-    if (i < 34)
-     rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [4]);
-   }
-   if (i < 42)
-   {
-    rad2 --;
-    if (i < 36)
-     rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [3]);
-   }
-   if (i < 44)
-   {
-    rad2 --;
-    if (i < 38)
-     rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [2]);
-   }
-   if (i < 46)
-   {
-    rad2 --;
-    if (i < 40)
-     rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [1]);
-   }
-   if (i < 48)
-   {
-    rad2 -= 2;
-    if (i < 42)
-     rad2 -= 2;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [0]);
-   }
-
-   rad2 -= 2;
-    if (i < 44)
-     rad2 -= 2;
-
-   if (rad2 > -1)
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad2, 0);
-
-   RLE_large_shock [j] [i] = get_rle_sprite(temp_bitmap);
-  }
-
-  destroy_bitmap(temp_bitmap);
- }
+			RLE_small_shock [j] [i] = get_rle_sprite(temp_bitmap);
+		}
+		destroy_bitmap(temp_bitmap);
+	}
 
 
- for (i = 0; i < 50; i ++)
- {
-  rad = i + 50; // see below
-  temp_bitmap = new_bitmap((rad + 1) * 2, (rad + 1) * 2, "prepare huge_shock");
-  clear_bitmap(temp_bitmap);
-  for (j = 0; j < 3; j ++)
-  {
-   rad = i + 50; // see above
-   rad2 = rad;
+	for (i = 0; i < 50; i ++)
+	{
+		rad = i + 25; // see below
+		temp_bitmap = new_bitmap((rad + 1) * 2, (rad + 1) * 2, "prepare large_shock");
+		clear_bitmap(temp_bitmap);
+		for (j = 0; j < 4; j ++)
+		{
+			rad = i + 25; // see above
+			rad2 = rad;
 
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [0]);
-   if (i < 42)
-   {
-    rad2 --;
-    if (i < 32)
-     rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [2]);
-   }
-   if (i < 42 && 0)
-   {
-    rad2 --;
-    if (i < 34)
-     rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [4]);
-   }
-   if (i < 42)
-   {
-    rad2 --;
-    if (i < 36)
-     rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [3]);
-   }
-   if (i < 44)
-   {
-    rad2 --;
-    if (i < 38)
-     rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [2]);
-   }
-   if (i < 46)
-   {
-    rad2 --;
-    if (i < 40)
-     rad2 --;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [1]);
-   }
-   if (i < 48)
-   {
-    rad2 -= 2;
-    if (i < 42)
-     rad2 -= 2;
-    circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [0]);
-   }
+			circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [0]);
+			if (i < 42)
+			{
+				rad2 --;
+				if (i < 32)
+					rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [2]);
+			}
+			if (i < 42 && 0)
+			{
+				rad2 --;
+				if (i < 34)
+					rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [4]);
+			}
+			if (i < 42)
+			{
+				rad2 --;
+				if (i < 36)
+					rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [3]);
+			}
+			if (i < 44)
+			{
+				rad2 --;
+				if (i < 38)
+					rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [2]);
+			}
+			if (i < 46)
+			{
+				rad2 --;
+				if (i < 40)
+					rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [1]);
+			}
+			if (i < 48)
+			{
+				rad2 -= 2;
+				if (i < 42)
+					rad2 -= 2;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [0]);
+			}
 
-   rad2 -= 2;
-    if (i < 44)
-     rad2 -= 2;
+			rad2 -= 2;
+			if (i < 44)
+				rad2 -= 2;
 
-   if (rad2 > -1)
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad2, 0);
+			if (rad2 > -1)
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, 0);
 
-   RLE_huge_shock [j] [i] = get_rle_sprite(temp_bitmap);
-  }
+			RLE_large_shock [j] [i] = get_rle_sprite(temp_bitmap);
+		}
 
-  destroy_bitmap(temp_bitmap);
- }
+		destroy_bitmap(temp_bitmap);
+	}
+
+
+	for (i = 0; i < 50; i ++)
+	{
+		rad = i + 50; // see below
+		temp_bitmap = new_bitmap((rad + 1) * 2, (rad + 1) * 2, "prepare huge_shock");
+		clear_bitmap(temp_bitmap);
+		for (j = 0; j < 3; j ++)
+		{
+			rad = i + 50; // see above
+			rad2 = rad;
+
+			circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [0]);
+			if (i < 42)
+			{
+				rad2 --;
+				if (i < 32)
+					rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [2]);
+			}
+			if (i < 42 && 0)
+			{
+				rad2 --;
+				if (i < 34)
+					rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [4]);
+			}
+			if (i < 42)
+			{
+				rad2 --;
+				if (i < 36)
+					rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [3]);
+			}
+			if (i < 44)
+			{
+				rad2 --;
+				if (i < 38)
+					rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [2]);
+			}
+			if (i < 46)
+			{
+				rad2 --;
+				if (i < 40)
+					rad2 --;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [1]);
+			}
+			if (i < 48)
+			{
+				rad2 -= 2;
+				if (i < 42)
+					rad2 -= 2;
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, beam_colours [j] [0]);
+			}
+
+			rad2 -= 2;
+			if (i < 44)
+				rad2 -= 2;
+
+			if (rad2 > -1)
+				circlefill(temp_bitmap, rad + 1, rad + 1, rad2, 0);
+
+			RLE_huge_shock [j] [i] = get_rle_sprite(temp_bitmap);
+		}
+
+		destroy_bitmap(temp_bitmap);
+	}
 
 
 
- temp_bitmap = new_bitmap(13, 13, "prepare ibullets");
+	// TODO: temp_bitmap is not free'd on time
+	temp_bitmap = new_bitmap(13, 13, "prepare ibullets");
 
 #define IB_CENTRE 6
 
-  for (j = 0; j < 4; j ++)
-  {
-   for (i = 0; i < IBULLETS; i ++)
-   {
-    rad = IBULLETS - i;
-    clear_bitmap(temp_bitmap);
-     circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, IBULLETS, beam_colours [j] [0]);
-     circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, IBULLETS - 1, beam_colours [j] [2]);
-     circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, IBULLETS - 2, beam_colours [j] [4]);
+	for (j = 0; j < 4; j ++)
+	{
+		for (i = 0; i < IBULLETS; i ++)
+		{
+			rad = IBULLETS - i;
+			clear_bitmap(temp_bitmap);
+			circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, IBULLETS, beam_colours [j] [0]);
+			circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, IBULLETS - 1, beam_colours [j] [2]);
+			circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, IBULLETS - 2, beam_colours [j] [4]);
 
-     if (rad > 0)
-     {
-      circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, beam_colours [j] [2]);
-      rad --;
-      if (rad > 0)
-      {
-       circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, beam_colours [j] [0]);
-       rad --;
-       if (rad > 0)
-       {
-        circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, beam_colours [j] [2]);
-        rad --;
-        if (rad > 0)
-         circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, beam_colours [j] [4]);
-       }
-      }
-     }
+			if (rad > 0)
+			{
+				circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, beam_colours [j] [2]);
+				rad --;
+				if (rad > 0)
+				{
+					circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, beam_colours [j] [0]);
+					rad --;
+					if (rad > 0)
+					{
+						circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, beam_colours [j] [2]);
+						rad --;
+						if (rad > 0)
+							circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, beam_colours [j] [4]);
+					}
+				}
+			}
 
-     RLE_ibullet [j] [i] = get_rle_sprite(temp_bitmap);
+			RLE_ibullet [j] [i] = get_rle_sprite(temp_bitmap);
+		}
+	}
 
-   }
-  }
+	int col1, col2;
 
- int col1, col2;
+	int second_col1, second_col2;
 
- int second_col1, second_col2;
+	for (j = 0; j < 3; j ++)
+	{
+		switch(j)
+		{
+		default: col1 = 0; col2 = 1; break;
+		case 1: col1 = 0; col2 = 2; break;
+		case 2: col1 = 1; col2 = 2; break;
+		}
+		for (i = 0; i < IBULLETS_2; i ++)
+		{
+			rad = IBULLETS - i;
+			if (rad < 1)
+			rad += IBULLETS;
+			clear_bitmap(temp_bitmap);
+			if (i < IBULLETS)
+			{
+			second_col1 = col1;
+			second_col2 = col2;
+			}
+			else
+			{
+			second_col1 = col2;
+			second_col2 = col1;
+			}
+			circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, IBULLETS, TRANS_RED1 + (TRANS_DIFFERENCE * second_col1));
+			circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, IBULLETS - 1, TRANS_RED3 + (TRANS_DIFFERENCE * second_col1));
+			circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, IBULLETS - 2, TRANS_RED5 + (TRANS_DIFFERENCE * second_col1));
 
- for (j = 0; j < 3; j ++)
- {
-   switch(j)
-   {
-    default: col1 = 0; col2 = 1; break;
-    case 1: col1 = 0; col2 = 2; break;
-    case 2: col1 = 1; col2 = 2; break;
-   }
-   for (i = 0; i < IBULLETS_2; i ++)
-   {
-    rad = IBULLETS - i;
-    if (rad < 1)
-     rad += IBULLETS;
-    clear_bitmap(temp_bitmap);
-    if (i < IBULLETS)
-    {
-     second_col1 = col1;
-     second_col2 = col2;
-    }
-     else
-     {
-      second_col1 = col2;
-      second_col2 = col1;
-     }
-     circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, IBULLETS, TRANS_RED1 + (TRANS_DIFFERENCE * second_col1));
-     circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, IBULLETS - 1, TRANS_RED3 + (TRANS_DIFFERENCE * second_col1));
-     circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, IBULLETS - 2, TRANS_RED5 + (TRANS_DIFFERENCE * second_col1));
+			if (rad > 0)
+			{
+			circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, TRANS_RED3 + (TRANS_DIFFERENCE * second_col2));
+			rad --;
+			if (rad > 0)
+			{
+			circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, TRANS_RED1 + (TRANS_DIFFERENCE * second_col2));
+			rad --;
+			if (rad > 0)
+			{
+			circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, TRANS_RED3 + (TRANS_DIFFERENCE * second_col2));
+			rad --;
+			if (rad > 0)
+			circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, TRANS_RED5 + (TRANS_DIFFERENCE * second_col2));
+			}
+			}
+			}
 
-     if (rad > 0)
-     {
-      circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, TRANS_RED3 + (TRANS_DIFFERENCE * second_col2));
-      rad --;
-      if (rad > 0)
-      {
-       circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, TRANS_RED1 + (TRANS_DIFFERENCE * second_col2));
-       rad --;
-       if (rad > 0)
-       {
-        circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, TRANS_RED3 + (TRANS_DIFFERENCE * second_col2));
-        rad --;
-        if (rad > 0)
-         circlefill(temp_bitmap, IB_CENTRE, IB_CENTRE, rad, TRANS_RED5 + (TRANS_DIFFERENCE * second_col2));
-       }
-      }
-     }
+			RLE_ibullet_2 [j] [i] = get_rle_sprite(temp_bitmap);
 
-     RLE_ibullet_2 [j] [i] = get_rle_sprite(temp_bitmap);
+		}
+	}
 
-   }
- }
+	destroy_bitmap(temp_bitmap);
 
+	for (i = 0; i < RLE_RINGS; i ++)
+	{
+		rad = i + 3;
+		temp_bitmap = new_bitmap((rad + 1) * 2, (rad + 1) * 2, "prepare rings");
+		clear_bitmap(temp_bitmap);
+		//for (j = 0; j < 3; j ++)
+		{
+			circlefill(temp_bitmap, rad + 1, rad + 1, rad, TRANS_RED1);
+			circlefill(temp_bitmap, rad + 1, rad + 1, rad - 1, TRANS_RED2);
+			circlefill(temp_bitmap, rad + 1, rad + 1, rad - 2, TRANS_RED1);
+			circlefill(temp_bitmap, rad + 1, rad + 1, rad - 3, 0);
 
-
- for (i = 0; i < RLE_RINGS; i ++)
- {
-  rad = i + 3;
-  temp_bitmap = new_bitmap((rad + 1) * 2, (rad + 1) * 2, "prepare rings");
-  clear_bitmap(temp_bitmap);
-  //for (j = 0; j < 3; j ++)
-  {
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad, TRANS_RED1);
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad - 1, TRANS_RED2);
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad - 2, TRANS_RED1);
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad - 3, 0);
-
-   RLE_ring [i] = get_rle_sprite(temp_bitmap);
-  }
-  destroy_bitmap(temp_bitmap);
- }
+			RLE_ring [i] = get_rle_sprite(temp_bitmap);
+		}
+		destroy_bitmap(temp_bitmap);
+	}
 
 
- for (i = 0; i < RLE_RINGS; i ++)
- {
-  rad = i + 3;
-  temp_bitmap = new_bitmap((rad + 1) * 2, (rad + 1) * 2, "prepare bright rings");
-  clear_bitmap(temp_bitmap);
-  //for (j = 0; j < 3; j ++)
-  {
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad, TRANS_RED1);
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad - 1, TRANS_RED2);
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad - 2, TRANS_RED3);
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad - 3, TRANS_RED2);
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad - 4, TRANS_RED1);
-   circlefill(temp_bitmap, rad + 1, rad + 1, rad - 5, 0);
+	for (i = 0; i < RLE_RINGS; i ++)
+	{
+		rad = i + 3;
+		temp_bitmap = new_bitmap((rad + 1) * 2, (rad + 1) * 2, "prepare bright rings");
+		clear_bitmap(temp_bitmap);
+		//for (j = 0; j < 3; j ++)
+		{
+			circlefill(temp_bitmap, rad + 1, rad + 1, rad, TRANS_RED1);
+			circlefill(temp_bitmap, rad + 1, rad + 1, rad - 1, TRANS_RED2);
+			circlefill(temp_bitmap, rad + 1, rad + 1, rad - 2, TRANS_RED3);
+			circlefill(temp_bitmap, rad + 1, rad + 1, rad - 3, TRANS_RED2);
+			circlefill(temp_bitmap, rad + 1, rad + 1, rad - 4, TRANS_RED1);
+			circlefill(temp_bitmap, rad + 1, rad + 1, rad - 5, 0);
 
-   RLE_bright_ring [i] = get_rle_sprite(temp_bitmap);
-  }
-  destroy_bitmap(temp_bitmap);
- }
+			RLE_bright_ring [i] = get_rle_sprite(temp_bitmap);
+		}
+		destroy_bitmap(temp_bitmap);
+	}
 
-  // temp_bitmap is not created each time through loop for icircles.
+	// temp_bitmap is not created each time through loop for icircles.
 
 }
 
@@ -679,10 +646,7 @@ void prepare_circles(void)
 void prepare_player_rles(void)
 {
 
-
- 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
-	strncat(filename_buffer, "gfx/player.bmp", sizeof(char) * DATADIR_SIZE);
- BITMAP *file_bitmap = load_up_bitmap(filename_buffer);
+	BITMAP * file_bitmap = bmp_from_data("gfx/player.bmp");
 
  fix_outline(file_bitmap);
 
@@ -731,11 +695,7 @@ void prepare_player_rles(void)
 
 void prepare_s_enemy_rles(void)
 {
-
-
- 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
-	strncat(filename_buffer, "gfx/small.bmp", sizeof(char) * DATADIR_SIZE);
- BITMAP *file_bitmap = load_up_bitmap(filename_buffer);
+	BITMAP * file_bitmap = bmp_from_data("gfx/small.bmp");
 
  fix_outline(file_bitmap);
 
@@ -814,8 +774,7 @@ void prepare_l_enemy_rles(void)
 
  RGB temp_palette [256];
 
- 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
-	strncat(filename_buffer, "gfx/large.bmp", sizeof(char) * DATADIR_SIZE);
+	set_fname("gfx/large.bmp");
  BITMAP *temp_bitmap = load_bitmap(filename_buffer, temp_palette);
 
 // set_palette(temp_palette);
@@ -828,9 +787,7 @@ void prepare_l_enemy_rles(void)
 
 #endif
 
- 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
-	strncat(filename_buffer, "gfx/small.bmp", sizeof(char) * DATADIR_SIZE);
- BITMAP *file_bitmap = load_up_bitmap(filename_buffer);
+	BITMAP * file_bitmap = bmp_from_data("gfx/small.bmp");
 
  fix_outline(file_bitmap);
 
@@ -856,11 +813,7 @@ void prepare_l_enemy_rles(void)
 
     destroy_bitmap(file_bitmap);
 
-
-
- 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
-	strncat(filename_buffer, "gfx/large2.bmp", sizeof(char) * DATADIR_SIZE);
- file_bitmap = load_up_bitmap(filename_buffer);
+file_bitmap = bmp_from_data("gfx/large2.bmp");
 
  fix_outline(file_bitmap);
 
@@ -890,11 +843,7 @@ void prepare_l_enemy_rles(void)
 
 void prepare_trans_rles(void)
 {
-
-
- 	strncpy(filename_buffer, data_directory, sizeof(char) * DATADIR_SIZE);
-	strncat(filename_buffer, "gfx/trans.bmp", sizeof(char) * DATADIR_SIZE);
- BITMAP *file_bitmap = load_up_bitmap(filename_buffer);
+	BITMAP * file_bitmap = bmp_from_data("gfx/trans.bmp");
 
  fix_trans(file_bitmap);
 /*
@@ -1547,6 +1496,10 @@ RLE_SPRITE *extract_rle_sprite(BITMAP *source, int x_source, int y_source, int x
 
  blit(source, tmp, x_source, y_source, 0, 0, x, y);
 
+// TODO: Valgrind complains about:
+// ==29154== Conditional jump or move depends on uninitialised value(s)
+// ==29154==    at 0x51BA0A2: get_rle_sprite (in /usr/lib/liballeg.so.4.4.2)
+// ==29154==    by 0x413DCC: extract_rle_sprite (display_init.c:1501)
  RLE_SPRITE *retval = get_rle_sprite(tmp);
 
  if (retval == NULL)

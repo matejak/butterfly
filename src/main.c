@@ -102,6 +102,9 @@ int allint =  allegro_init();
 
  startup_menu();
 
+ destroy_font(font);
+ allegro_exit();
+
  return 0;
 
 }

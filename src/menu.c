@@ -377,7 +377,7 @@ run_beat();
    if (menu_select == MENU_EXIT)
    {
     goodbye_menu_circles();
-    exit(0);
+    return;
    }
 
    if (menu_select == MENU_KEYS)
